@@ -76,9 +76,8 @@ func MakeOverlap(cuts []*Cut, maxWidth, maxHeight int) [][]int {
 	return veryLarge
 }
 
-func FindCut(cuts []*Cut, x, y int) *Cut {
+func FindCut(cuts []*Cut, x, y int) []*Cut {
 	validX := []*Cut{}
-
 	for _, c := range cuts {
 		i := sort.Search(len(c.Xs), func(i int) bool { return c.Xs[i] == x })
 		if i < len(c.Xs) {
@@ -87,15 +86,16 @@ func FindCut(cuts []*Cut, x, y int) *Cut {
 		}
 	}
 
+	validY := []*Cut{}
 	for _, c := range validX {
 		i := sort.Search(len(c.Ys), func(i int) bool { return c.Ys[i] == y })
 		if i < len(c.Ys) {
 			// y is present
-			return c
+			validY = append(validY, c)
 		}
 	}
 
-	return nil
+	return validY
 }
 
 func main() {
@@ -121,8 +121,10 @@ func main() {
 		for y, c := range row {
 			if c < 3 {
 				cut := FindCut(cuts, x, y)
-				if cut != nil {
-					log.Printf("c == %d: \t %+v", c, cut)
+				if len(cut) > 0 {
+					for i := range cut {
+						log.Printf("c == %d: \t %+v", c, cut[i])
+					}
 				}
 			}
 		}
