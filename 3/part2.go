@@ -2,11 +2,11 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"math"
 	"os"
 	"regexp"
-	"sort"
 	"strconv"
 )
 
@@ -18,6 +18,7 @@ type Cut struct {
 	Height     int
 	Xs         []int
 	Ys         []int
+	Overlap    bool
 }
 
 var re = regexp.MustCompile(`#(\d+) @ (\d+),(\d+): (\d+)x(\d+)`)
@@ -33,12 +34,12 @@ func Parse(line string) *Cut {
 		h, _ := strconv.Atoi(parts[5])
 
 		xs := []int{}
-		for x := b; x <= w; x++ {
+		for x := b; x <= b+w; x++ {
 			xs = append(xs, x)
 		}
 
 		ys := []int{}
-		for y := c; y <= h; y++ {
+		for y := c; y <= c+h; y++ {
 			ys = append(ys, y)
 		}
 
@@ -54,48 +55,6 @@ func Parse(line string) *Cut {
 	}
 
 	return nil
-}
-
-func MakeOverlap(cuts []*Cut, maxWidth, maxHeight int) [][]int {
-	// x, y
-	veryLarge := make([][]int, maxWidth)
-	for i := 0; i < maxWidth; i++ {
-		veryLarge[i] = make([]int, maxHeight)
-	}
-
-	for _, c := range cuts {
-		for x := 0; x < c.Width; x++ {
-			for y := 0; y < c.Height; y++ {
-				xo := x + c.LeftOffset
-				yo := y + c.TopOffset
-				veryLarge[xo][yo] += 1
-			}
-		}
-	}
-
-	return veryLarge
-}
-
-func FindCut(cuts []*Cut, x, y int) []*Cut {
-	validX := []*Cut{}
-	for _, c := range cuts {
-		i := sort.Search(len(c.Xs), func(i int) bool { return c.Xs[i] == x })
-		if i < len(c.Xs) {
-			// x is present
-			validX = append(validX, c)
-		}
-	}
-
-	validY := []*Cut{}
-	for _, c := range validX {
-		i := sort.Search(len(c.Ys), func(i int) bool { return c.Ys[i] == y })
-		if i < len(c.Ys) {
-			// y is present
-			validY = append(validY, c)
-		}
-	}
-
-	return validY
 }
 
 func main() {
@@ -115,18 +74,25 @@ func main() {
 		log.Println(err)
 	}
 
-	overlaps := MakeOverlap(cuts, maxWidth, maxHeight)
-
-	for x, row := range overlaps {
-		for y, c := range row {
-			if c < 3 {
-				cut := FindCut(cuts, x, y)
-				if len(cut) > 0 {
-					for i := range cut {
-						log.Printf("c == %d: \t %+v", c, cut[i])
-					}
-				}
+	coords := map[string][]*Cut{}
+	for _, c := range cuts {
+		for _, x := range c.Xs {
+			for _, y := range c.Ys {
+				coord := fmt.Sprintf("%d,%d", x, y)
+				coords[coord] = append(coords[coord], c)
 			}
+		}
+	}
+
+	for _, cuts := range coords {
+		for _, c := range cuts {
+			c.Overlap = len(cuts) > 1
+		}
+	}
+
+	for _, c := range cuts {
+		if !c.Overlap {
+			log.Printf("-- %+v", c)
 		}
 	}
 }
