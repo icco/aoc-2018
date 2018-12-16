@@ -54,6 +54,20 @@ func Parse(line string) *Entry {
 	return e
 }
 
+func FillGuard(entries []*Entry) {
+	currentGuard := 0
+	for _, e := range entries {
+		switch e.Action {
+		case WAKE:
+			e.Guard = currentGuard
+		case SLEEP:
+			e.Guard = currentGuard
+		case SWITCH:
+			currentGuard = e.Guard
+		}
+	}
+}
+
 func main() {
 	actions := []*Entry{}
 	scanner := bufio.NewScanner(os.Stdin)
@@ -66,6 +80,7 @@ func main() {
 	}
 
 	sort.Sort(ByTime(actions))
+	FillGuard(actions)
 
 	for _, e := range actions {
 		log.Printf("%+v", e)
