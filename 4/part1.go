@@ -82,7 +82,44 @@ func main() {
 	sort.Sort(ByTime(actions))
 	FillGuard(actions)
 
+	var lastSleep *Entry
+	guardSleep := map[int][60]int{}
+	guardSleepTotal := map[int]int{}
 	for _, e := range actions {
 		log.Printf("%+v", e)
+		if e.Action == SLEEP {
+			lastSleep = e
+		}
+
+		if e.Action == WAKE {
+			for i := lastSleep.Time.Minute(); i < e.Time.Minute(); i++ {
+				minutes := guardSleep[e.Guard]
+				minutes[i] += 1
+				guardSleep[e.Guard] = minutes
+				guardSleepTotal[e.Guard] += 1
+			}
+		}
 	}
+
+	max := 0
+	highestGuard := 0
+	for g, t := range guardSleep {
+		log.Printf("%4d\t(%d): \t %+v", g, guardSleepTotal[g], t)
+		if guardSleepTotal[g] > max {
+			max = guardSleepTotal[g]
+			highestGuard = g
+		}
+	}
+
+	max = 0
+	highestMin := 0
+	for m, c := range guardSleep[highestGuard] {
+
+		if c > max {
+			highestMin = m
+			max = c
+		}
+	}
+
+	log.Printf("%d * %d = %d", highestMin, highestGuard, highestMin*highestGuard)
 }
