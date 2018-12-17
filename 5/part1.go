@@ -19,18 +19,16 @@ func main() {
 	}
 
 	for {
-		toRemove := []int{}
+		removed := false
 		for i := 0; i < len(chars)-1; i++ {
 			if isPair(chars[i], chars[i+1]) {
-				toRemove = append(toRemove, i, i+1)
+				chars = append(chars[:i], chars[i+2:]...)
+				removed = true
+				break
 			}
 		}
 
-		if len(toRemove) > 0 {
-			for i := range toRemove {
-				chars = append(chars[:i], chars[i+1:]...)
-			}
-		} else {
+		if !removed {
 			log.Printf("Complete! %d", len(chars))
 			return
 		}
