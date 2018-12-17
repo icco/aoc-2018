@@ -18,21 +18,45 @@ func main() {
 		log.Println(err)
 	}
 
-	for {
-		removed := false
-		for i := 0; i < len(chars)-1; i++ {
-			if isPair(chars[i], chars[i+1]) {
-				chars = append(chars[:i], chars[i+2:]...)
-				removed = true
-				break
-			}
-		}
+	charCopy := make([]string, len(chars))
+	copy(charCopy, chars)
 
-		if !removed {
-			log.Printf("Complete! %d", len(chars))
-			return
+	alphabet := strings.Split("abcdefghijklmnopqrstuvwxyz", "")
+	for _, r := range alphabet {
+		chars := charCopy
+		InfiniStrip(chars, r)
+	}
+}
+
+func InfiniStrip(chars []string, r string) int {
+	oldLen := len(chars)
+	for {
+		chars = Strip(chars, r)
+
+		if len(chars) == oldLen {
+			log.Printf("Completed %s : %d", r, len(chars))
+			return len(chars)
+		}
+		oldLen = len(chars)
+	}
+}
+
+func Strip(chars []string, r string) []string {
+	for i := 0; i < len(chars); i++ {
+		if strings.ToLower(chars[i]) == r {
+			chars = append(chars[:i], chars[i+1:]...)
+			return chars
 		}
 	}
+
+	for i := 0; i < len(chars)-1; i++ {
+		if isPair(chars[i], chars[i+1]) {
+			chars = append(chars[:i], chars[i+2:]...)
+			return chars
+		}
+	}
+
+	return chars
 }
 
 func isPair(a, b string) bool {
