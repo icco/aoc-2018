@@ -102,22 +102,15 @@ func main() {
 	}
 
 	max := 0
+	highestMin := 0
 	highestGuard := 0
 	for g, t := range guardSleep {
-		log.Printf("%4d\t(%d): \t %+v", g, guardSleepTotal[g], t)
-		if guardSleepTotal[g] > max {
-			max = guardSleepTotal[g]
-			highestGuard = g
-		}
-	}
-
-	max = 0
-	highestMin := 0
-	for m, c := range guardSleep[highestGuard] {
-
-		if c > max {
-			highestMin = m
-			max = c
+		for m, c := range t {
+			if c > max {
+				highestMin = m
+				highestGuard = g
+				max = c
+			}
 		}
 	}
 
